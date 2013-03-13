@@ -1,0 +1,1 @@
+/home/tinou/Kinect/FaceDetect_Webcam/CMakeFiles/FaceDetect.dir
