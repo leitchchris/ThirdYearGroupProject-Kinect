@@ -1,0 +1,37 @@
+Etienne Hocquard - Napier University
+Book record for Kinect dev of the Group Project
+
+----------------------------------------------
+		Previous
+Install opencv + libfreenect from git
+http://opencv.willowgarage.com/wiki/InstallGuide_Linux
+http://openkinect.org/wiki/Getting_Started
+TOWATCH : http://mitchtech.net/raspberry-pi-opencv/
+-----------------------------------------------
+		Session 21/02
+Test OpenCV with Kinect :
+	-Code tinou/Kinect_recognition/OwnTest/test.cpp
+	-Compile : gcc -o nomDeMonPgr test.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect
+	-Problem : Conflict Mutex -> Solution : comment Mutex class
+	-src : http://openkinect.org/wiki/C%2B%2BOpenCvExample
+	http://docs.opencv.org/doc/tutorials/introduction/linux_gcc_cmake/linux_gcc_cmake.html#linux-gcc-usage
+	http://www.morethantechnical.com/2010/11/22/kinect-and-opencv-2-1/
+	http://opencv.willowgarage.com/wiki/Kinect
+	
+2D Face Detect :
+	-Code tinou/Kinect_recognition/TestOpenCVKinectFaceReco/OCvKinect.cpp
+	- + Makefile : cmake . -> make
+	-src : http://docs.opencv.org/modules/contrib/doc/facerec/facerec_tutorial.html#appendixft
+	http://docs.opencv.org/doc/tutorials/objdetect/cascade_classifier/cascade_classifier.html --> WORKING with webcam
+
+-----------------------------------------------
+		Session 22/02
+OpenNi ressource : 
+Test OpenCV + freenect :
+	- Kinect_detection/TestOpenCVKinect
+	- working
+
+Install OpenNI + OpenCV for kinect :
+	- https://github.com/OpenNI/OpenNI
+	- http://docs.opencv.org/doc/user_guide/ug_highgui.html
+
