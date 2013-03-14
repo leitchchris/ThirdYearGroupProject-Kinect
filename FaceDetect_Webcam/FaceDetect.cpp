@@ -85,25 +85,26 @@ void detectAndDisplay( Mat frame )
        int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
        circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
 
-       //Save image if at least one face and one eyes.
-       if(count2 <= 10 && j > 0 && j < 3)
+       //Save image if only least one face and two eyes.
+       if(count2 <= 5 && j == 1)
        {
           printf ("Save...\n");
           string name = "img/" + intToString(count2) + ".jpg";
           imwrite(name, frame_gray);
+          sleep(3);
           count2++;
 
-          string command = "python crop.py " + intToString(count2) + " " + intToString(eyes[j-1].x) + " " + intToString(eyes[j-1].y) + " " + intToString(eyes[j].x) + " " + intToString(eyes[j].y) ;
+          /*string command = "python crop.py " + intToString(count2) + " " + intToString(eyes[j-1].x) + " " + intToString(eyes[j-1].y) + " " + intToString(eyes[j].x) + " " + intToString(eyes[j].y) ;
           printf ("%s \n", command.c_str());
-          system(command.c_str());
-          //sleep(1);
+          system(command.c_str());*/
+
           printf ("Done\n");
        }
      }
   }
   
   //-- Show what you got
-  imshow( window_name, frame );
+  //imshow( window_name, frame );
  }
 
  string intToString ( int nb )
