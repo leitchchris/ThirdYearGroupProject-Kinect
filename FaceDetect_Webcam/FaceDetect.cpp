@@ -71,7 +71,7 @@ void detectAndDisplay( Mat frame )
   for( int i = 0; i < faces.size(); i++ )
   {
     Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
-    ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+    //ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
 
     Mat faceROI = frame_gray( faces[i] );
     std::vector<Rect> eyes;
@@ -83,14 +83,14 @@ void detectAndDisplay( Mat frame )
      {
        Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
        int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
-       circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
+       //circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
 
        //Save image if only least one face and two eyes.
        if(count2 <= 10 && j == 1)
        {
           printf ("Save...\n");
           string name = "img/" + intToString(count2) + ".jpg";
-          imwrite(name, frame_gray);
+          imwrite(name, frame);
           sleep(3);
           count2++;
 
