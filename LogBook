@@ -35,3 +35,13 @@ Install OpenNI + OpenCV for kinect :
 	- https://github.com/OpenNI/OpenNI
 	- http://docs.opencv.org/doc/user_guide/ug_highgui.html
 
+----------------------------------------------
+		Session 13+14/03
+GitHub commit push
+	- Face detect OK
+	- Face crop and align OK
+	- Try Face Reco
+	- need : Make reco working
+		 do a face training with luminosity and everythin
+		 make the infrared working 
+
