@@ -32,7 +32,7 @@
    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
    if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
 
-   for (int i = 0; i<= 5; i++)    //TODO change to 
+   for (int i = 0; i<= 10; i++)    //TODO change to 
    {
       frame = imread("../img/" + intToString(i) + ".jpg");
       printf("Open img num : %d\n", i);
@@ -73,7 +73,7 @@ void detectAndDisplay( Mat frame )
        //printf(count2 + "\n");
        //Delay!!
        //Crop and align face if two eyes
-       if(count2 <= 5 && j == 1)
+       if(count2 <= 10 && j == 1)
        {
           string command;
           if ( eyes[j-1].x < eyes[j].x)
