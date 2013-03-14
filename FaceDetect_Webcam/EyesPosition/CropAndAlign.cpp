@@ -41,7 +41,6 @@
  }
 
 static int count2 = 0;
-static bool alt = false;
 /** @function detectAndDisplay */
 void detectAndDisplay( Mat frame )
 {
@@ -76,10 +75,13 @@ void detectAndDisplay( Mat frame )
        //Crop and align face if two eyes
        if(count2 <= 10 && j == 1)
        {
-          string command = "python ../crop.py " + intToString(count2) + " " + intToString(faces[i].x + eyes[j-1].x + eyes[j-1].width*0.5) + " " + intToString(faces[i].y + eyes[j-1].y + eyes[j-1].height*0.5) + " " + intToString(faces[i].x + eyes[j].x + eyes[j].width*0.5) + " " + intToString(faces[i].y + eyes[j].y + eyes[j].height*0.5) ;
+          string command;
+          if ( eyes[j-1].x < eyes[j].x)
+            command = "python ../crop.py " + intToString(count2) + " " + intToString(faces[i].x + eyes[j-1].x + eyes[j-1].width*0.5) + " " + intToString(faces[i].y + eyes[j-1].y + eyes[j-1].height*0.5) + " " + intToString(faces[i].x + eyes[j].x + eyes[j].width*0.5) + " " + intToString(faces[i].y + eyes[j].y + eyes[j].height*0.5) ;
+          else
+            command = "python ../crop.py " + intToString(count2) + " " + intToString(faces[i].x + eyes[j].x + eyes[j].width*0.5) + " " + intToString(faces[i].y + eyes[j].y + eyes[j].height*0.5) + " " + intToString(faces[i].x + eyes[j-1].x + eyes[j-1].width*0.5) + " " + intToString(faces[i].y + eyes[j-1].y + eyes[j-1].height*0.5) ;
           printf ("%s \n", command.c_str());
           system(command.c_str());
-          alt = ~alt;
           sleep(2);
           printf ("Done\n");
        }
