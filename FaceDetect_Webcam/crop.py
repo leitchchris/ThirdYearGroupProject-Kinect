@@ -91,7 +91,7 @@ def main(argv):
   #  CropFace(image, eye_left=(252,364), eye_right=(420,366), offset_pct=(0.2,0.2)).save("arnie_20_20_70_70.jpg")
   #}
   image = Image.open ("../img/" + argv[0] + ".jpg")
-  CropFace(image, eye_left=(int(argv[1]), int(argv[2])), eye_right=(int(argv[3]), int(argv[4])), offset_pct=(0.3,0.3), dest_sz=(92,112)).save("../img/" + argv[0] + "crop.pgm")
+  CropFace(image, eye_left=(int(argv[1]), int(argv[2])), eye_right=(int(argv[3]), int(argv[4])), offset_pct=(0.3,0.3), dest_sz=(92,112)).save("../img/" + argv[0] + ".pgm")
   
       #-------------------------------
 if __name__ == "__main__":
