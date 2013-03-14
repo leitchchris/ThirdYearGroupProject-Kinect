@@ -19,6 +19,8 @@ stdio.h
 -
 unistd.h
 -
+sstream
+-
 
 /usr/local/include/opencv2/core/core.hpp
 opencv2/core/types_c.h

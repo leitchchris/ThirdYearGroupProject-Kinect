@@ -32,11 +32,16 @@
    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
    if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
 
-   frame = imread("../img/2.jpg");
-   detectAndDisplay(frame);
+   for (int i = 0; i<= 10; i++)
+   {
+      frame = imread("../img/" + intToString(i) + ".jpg");
+      printf("Open img num : %d\n", i);
+      detectAndDisplay(frame);
+   }
  }
 
-static int count2 = 2;
+static int count2 = 0;
+static bool alt = false;
 /** @function detectAndDisplay */
 void detectAndDisplay( Mat frame )
 {
@@ -47,7 +52,7 @@ void detectAndDisplay( Mat frame )
   equalizeHist( frame_gray, frame_gray );
 
   //-- Detect faces
-  face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(64, 48) );
+  face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
 
   for( int i = 0; i < faces.size(); i++ )
   {
@@ -58,30 +63,34 @@ void detectAndDisplay( Mat frame )
     std::vector<Rect> eyes;
 
     //-- In each face, detect eyes
-    eyes_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CV_HAAR_SCALE_IMAGE, Size(64, 48) );
+    eyes_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CV_HAAR_SCALE_IMAGE, Size(30, 30) );
 
     for( int j = 0; j < eyes.size(); j++ )
      {
        Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
        int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
        circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
-       printf("Eyes%d x : %d\nEyes%d y : %d \n", j, eyes[j].x, j, eyes[j].y);
+       printf("Eyes%d x : %f\nEyes%d y : %f \n", j, faces[i].x + eyes[j].x + eyes[j].width*0.5 , j, faces[i].y + eyes[j].y + eyes[j].height*0.5);
+       //printf(count2 + "\n");
        //Delay!!
-       //Crop and align face
-       if(count2 <= 10 && j > 0 && j < 3)
+       //Crop and align face if two eyes
+       if(count2 <= 10 && j == 1)
        {
-          string command = "python ../crop.py " + intToString(count2) + " " + intToString(eyes[j-1].x) + " " + intToString(eyes[j-1].y) + " " + intToString(eyes[j].x) + " " + intToString(eyes[j].y) ;
+          string command = "python ../crop.py " + intToString(count2) + " " + intToString(faces[i].x + eyes[j-1].x + eyes[j-1].width*0.5) + " " + intToString(faces[i].y + eyes[j-1].y + eyes[j-1].height*0.5) + " " + intToString(faces[i].x + eyes[j].x + eyes[j].width*0.5) + " " + intToString(faces[i].y + eyes[j].y + eyes[j].height*0.5) ;
           printf ("%s \n", command.c_str());
           system(command.c_str());
-          //sleep(1);
+          alt = ~alt;
+          sleep(2);
           printf ("Done\n");
        }
      }
   }
   string name = "../img/" + intToString(count2) + "x.jpg";
+  count2++;
   imwrite(name, frame);
+  sleep(2);
   //-- Show what you got
-  imshow( window_name, frame );
+  //imshow( window_name, frame );
  }
 
  string intToString ( int nb )

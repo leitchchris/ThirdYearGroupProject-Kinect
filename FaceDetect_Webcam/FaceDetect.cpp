@@ -4,13 +4,15 @@
 
  #include <iostream>
  #include <stdio.h>
-#include <unistd.h>   // For sleep
+ #include <unistd.h>   // For sleep
+ #include <sstream> //For int to string
 
  using namespace std;
  using namespace cv;
 
  /** Function Headers */
  void detectAndDisplay( Mat frame );
+ string intToString ( int nb );
 
  /** Global variables */
  String face_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -53,6 +55,7 @@
    return 0;
  }
 
+static int count2 = 0;
 /** @function detectAndDisplay */
 void detectAndDisplay( Mat frame )
 {
@@ -81,10 +84,33 @@ void detectAndDisplay( Mat frame )
        Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
        int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
        circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
-       printf("FaceDetect");
+
+       //Save image if at least one face and one eyes.
+       if(count2 <= 10 && j > 0 && j < 3)
+       {
+          printf ("Save...\n");
+          string name = "img/" + intToString(count2) + ".jpg";
+          imwrite(name, frame_gray);
+          count2++;
+
+          string command = "python crop.py " + intToString(count2) + " " + intToString(eyes[j-1].x) + " " + intToString(eyes[j-1].y) + " " + intToString(eyes[j].x) + " " + intToString(eyes[j].y) ;
+          printf ("%s \n", command.c_str());
+          system(command.c_str());
+          //sleep(1);
+          printf ("Done\n");
+       }
      }
   }
   
   //-- Show what you got
   imshow( window_name, frame );
+ }
+
+ string intToString ( int nb )
+ {
+    std::string s;
+    std::stringstream out;
+    out << nb;
+    s = out.str();
+    return s;
  }
