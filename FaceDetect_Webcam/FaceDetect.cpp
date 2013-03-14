@@ -86,7 +86,7 @@ void detectAndDisplay( Mat frame )
        circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
 
        //Save image if only least one face and two eyes.
-       if(count2 <= 5 && j == 1)
+       if(count2 <= 10 && j == 1)
        {
           printf ("Save...\n");
           string name = "img/" + intToString(count2) + ".jpg";
