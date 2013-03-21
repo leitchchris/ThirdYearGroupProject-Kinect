@@ -1,12 +1,12 @@
 /*
 * Author			: Etienne Hocquard
-* Last Modified 	: 22th February 2013	       Created  :  22th February 2013    
-* File			    : OCvKinect2.cpp
+* Last Modified 	: 21th March 2013	       Created  :  21th March 2013   
+* File			    : InfraKinect.cpp
 * Target			: Kinect home automation project 
 * Version		    : 1.0.0
-* Description		: Face detection using openCV and the kinect with openni drivers
-* Requires			: Kinect, openni, openCV --! haarcascade_eye_tree_eyeglasses.xml + haarcascade_frontalface_alt.xml !--
-* G++				: gcc -o InfraKinect InfraKinect.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect
+* Description		: Infrared Face detection using openCV and the kinect with openni drivers
+* Requires			: Kinect, openni, openCV --! haarcascade_eye_tree_eyeglasses.xml + haarcascade_frontalface_alt.xml
+* G++				: gcc -o InfraKinect InfraKinect.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect -lfreenect_cv -lfreenect_sync
 */
 
 #include <iostream>
@@ -47,26 +47,24 @@ int main( int argc, const char** argv )
  	if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
 
 	while (true) {
-		char *irBufferTemp = 0;
 
+		//-- 2. Get Infrared image
+		char *irBufferTemp = 0;
 		IplImage* image = 0; 
 		if (!image) image = cvCreateImageHeader(cvSize(640,488), 8 , 1); 
 		unsigned int timestamp;
+
 		if( freenect_sync_get_video((void**)&irBufferTemp,&timestamp,0,FREENECT_VIDEO_IR_8BIT)) 
 			return NULL;
-
 		else
 		{	
 			cvSetData(image, irBufferTemp, 640*1 ) ; 
 			Mat IRimg(image);
+
+			//-- 3. Detect face and display
 			detectAndDisplay( IRimg );
 			int c = waitKey(10);
     		if( (char)c == 'c' ) { break; }
-			// // cvShowImage("RGB", IRimg);
-
-			// cv::imshow("Infra", IRimg);
-			// cvWaitKey(0);
-			// //imwrite("Test.jpg", image);
 		}
 	}
 	return 0;
@@ -90,7 +88,7 @@ void detectAndDisplay( Mat frame )
   for( int i = 0; i < faces.size(); i++ )
   {
     Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
-    ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+    //ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
 
     Mat faceROI = frame_gray( faces[i] );
     std::vector<Rect> eyes;
@@ -102,7 +100,7 @@ void detectAndDisplay( Mat frame )
      {
        Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
        int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
-       circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
+       //circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
 
        //Save image if only least one face and two eyes.
        if(count2 <= 10 && j == 1)

@@ -1,3 +1,14 @@
+ /*
+* Author          : Etienne Hocquard
+* Last Modified   : 21th March 2013        Created  :  21th March 2013   
+* File            : CropAndAlign.cpp
+* Target          : Kinect home automation project 
+* Version         : 1.0.0
+* Description     : Detect face from image saved, call a python script with eyes position to crop and align faces images
+* Requires        : openni, openCV --! haarcascade_eye_tree_eyeglasses.xml + haarcascade_frontalface_alt.xml
+* G++             : "Cmake ." + "make"
+*/
+
  #include "opencv2/objdetect/objdetect.hpp"
  #include "opencv2/highgui/highgui.hpp"
  #include "opencv2/imgproc/imgproc.hpp"
