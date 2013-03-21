@@ -158,13 +158,14 @@ IplImage *GlViewColor(IplImage *depth)
 //================Function Main==================
 int main( int argc, const char** argv )
 {
-
+	Mat IRimg;
+	//IRimg = cvCreateImageHeader(cvSize(640,488), 8 , 1);
 	while (true) {
-			char *irBuffer  = (char*) malloc( 640*480*sizeof(char));
-	char *irBufferTemp = 0;
-    char *rgbBuffer = 0;
-    uint32_t ts;
-    printf("Init\n");
+		char *irBuffer  = (char*) malloc( 640*480*sizeof(char));
+		char *irBufferTemp = 0;
+		char *rgbBuffer = 0;
+		uint32_t ts;
+		printf("Init\n");
 		/*	//-- 2. Read the video stream
 	
 		//Freenect::setVideoFormat(FREENECT_VIDEO_IR_8BIT);
@@ -179,22 +180,23 @@ int main( int argc, const char** argv )
 			printf("Error: Kinect not connected?\n");
 			return -1;
 		}*/
-		IplImage *image = 0; 
-		Mat Test();
-		if (!image) image = cvCreateImageHeader(cvSize(640,488), 8 , 1); 
-		unsigned int timestamp;
-		printf("Init 2\n");
-	    if( freenect_sync_get_video((void**)&irBufferTemp,&timestamp,0,FREENECT_VIDEO_IR_8BIT)) 
-	    	return NULL;
-	    
-	    else
-	    {	printf("Get img\n");
-	    	cvSetData(image, irBufferTemp, 640*3 ) ; 
-	    	printf("Display\n");
-			if(image != NULL)
+			IplImage *image = 0; 
+			if (!image) image = cvCreateImageHeader(cvSize(640,488), 8 , 1); 
+			unsigned int timestamp;
+			printf("Init 2\n");
+			if( freenect_sync_get_video((void**)&irBufferTemp,&timestamp,0,FREENECT_VIDEO_IR_8BIT)) 
+				return NULL;
+
+			else
+			{	
+				printf("Get img\n");
+				cvSetData(image, irBufferTemp, 640*1 ) ; 
+				printf("Display\n");
+				//cvConvertImage(image, &IRimg);
 				cvShowImage("RGB", image);
+				cvWaitKey(0);
 			//imwrite("Test.jpg", image);
-		}
+			}
 		//cvShowImage("Depth", GlViewColor(depth));
 	}
 	return 0;
