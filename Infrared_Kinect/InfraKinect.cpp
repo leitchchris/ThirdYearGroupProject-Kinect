@@ -42,6 +42,10 @@ RNG rng(12345);
 //================Function Main==================
 int main( int argc, const char** argv )
 {
+	//-- 1. Load the cascades
+ 	if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
+ 	if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
+
 	while (true) {
 		char *irBufferTemp = 0;
 
@@ -86,7 +90,7 @@ void detectAndDisplay( Mat frame )
   for( int i = 0; i < faces.size(); i++ )
   {
     Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
-    //ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
+    ellipse( frame, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
 
     Mat faceROI = frame_gray( faces[i] );
     std::vector<Rect> eyes;
@@ -109,9 +113,9 @@ void detectAndDisplay( Mat frame )
           //sleep(3);
           count2++;
 
-          string command = "python crop.py " + intToString(count2) + " " + intToString(eyes[j-1].x) + " " + intToString(eyes[j-1].y) + " " + intToString(eyes[j].x) + " " + intToString(eyes[j].y) ;
-          printf ("%s \n", command.c_str());
-          system(command.c_str());
+          // string command = "python crop.py " + intToString(count2) + " " + intToString(eyes[j-1].x) + " " + intToString(eyes[j-1].y) + " " + intToString(eyes[j].x) + " " + intToString(eyes[j].y) ;
+          // printf ("%s \n", command.c_str());
+          // system(command.c_str());
 
           printf ("Done\n");
        }
