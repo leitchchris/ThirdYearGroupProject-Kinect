@@ -6,7 +6,7 @@
 * Version		    : 1.0.0
 * Description		: Face detection using openCV and the kinect with openni drivers
 * Requires			: Kinect, openni, openCV --! haarcascade_eye_tree_eyeglasses.xml + haarcascade_frontalface_alt.xml !--
-* G++				: gcc -o OCvKinect2 OCvKinect2.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect
+* G++				: gcc -o Lum Lum.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect
 * Src 				: http://openkinect.org/wiki/C%2B%2BOpenCvExample
 */
 
@@ -99,7 +99,7 @@ class MyFreenectDevice : public Freenect::FreenectDevice {
 int main( int argc, const char** argv )
 {
 	Mat rgb_frame(Size(640,480),CV_8UC3);
-	Mat luminosity;
+	Mat luminosity(Size(640,480),CV_8UC3);
 
 	//-- 2. Read the video stream
 	Freenect::Freenect freenect;
@@ -117,47 +117,45 @@ int main( int argc, const char** argv )
 		//-- 3. Apply the classifier to the frame
     	if(!rgb_frame.empty())
     	{ 
-    		//printf ("To HSV\n");
-    		cvtColor(rgb_frame, luminosity, CV_BGR2HSV);
+    		cvtColor(rgb_frame, luminosity, CV_BGR2GRAY);
 
+			cv::Scalar avgPixelIntensity = cv::mean( luminosity );
+
+			//prints out only .val[0] since image was grayscale
+			printf("%f\n", avgPixelIntensity.val[0]);
+
+    		/*
     		// let's quantize the hue to 30 levels
     		// and the saturation to 32 levels
-    		int hbins = 30, sbins = 32, vbins=32;
-    		int histSize[] = {hbins, sbins, vbins};
+    		int hbins = 30, sbins = 32;
+    		int histSize[] = {hbins, sbins};
     		// hue varies from 0 to 179, see cvtColor
     		float hranges[] = { 0, 180 };
     		// saturation varies from 0 (black-gray-white) to
     		// 255 (pure spectrum color)
     		float sranges[] = { 0, 256 };
-    		// saturation varies from 0 (black-gray-white) to
-    		// 255 (pure spectrum color)
-    		float vranges[] = { 0, 256 };
-    		const float* ranges[] = { hranges, sranges, vranges };
+    		const float* ranges[] = { hranges, sranges };
     		MatND hist;
     		// we compute the histogram from the 0-th and 1-st channels
-    		int channels[] = {0, 1, 2};
+    		int channels[] = {0, 1};
     		calcHist( &luminosity, 2, channels, Mat(), // do not use mask
      			hist, 2, histSize, ranges,
     		    true, // the histogram is uniform
         		false );
     		double maxVal=0;
     		minMaxLoc(hist, 0, &maxVal, 0, 0);
-    		printf("Max val : %f \n", maxVal);
+    		//printf("Max val : %f \n", maxVal);
 
     		 int scale = 10;
     		 Mat histImg = Mat::zeros(sbins*scale, hbins*10, CV_8UC3);
     		 for( int h = 0; h < hbins; h++ )
     		    for( int s = 0; s < sbins; s++ )
     		    {
-    		    	for (int v=0; v < vbins; v++)
-    		    	{
-    		    		//pp float binVal = hist.at<float>(h, s, v);
-    		      //   	int intensity = cvRound(binVal*255/maxVal);
-    		      //   	IplImage histImgIpl = histImg;
-    		      //   	cvRectangle( &histImgIpl, Point(h*scale, s*scale), Point( (h+1)*scale - 1, (s+1)*scale - 1), Scalar::all(intensity), CV_FILLED );
-    		    		printf("%d  ", vbins);
-    		    	}
-    		        
+    		    		float binVal = hist.at<float>(h, s);
+    		        	int intensity = cvRound(binVal*255/maxVal);
+    		        	//IplImage histImgIpl = histImg;
+    		        	//cvRectangle( &histImgIpl, Point(h*scale, s*scale), Point( (h+1)*scale - 1, (s+1)*scale - 1), Scalar::all(intensity), CV_FILLED );
+    		    		printf("%d\n", intensity);
     		    }
     		printf("new\n\n\n\n\n");
     		namedWindow( "Source", 1 );
@@ -165,7 +163,7 @@ int main( int argc, const char** argv )
 
     		// namedWindow( "H-S Histogram", 1 );
     		// imshow( "H-S Histogram", histImg );
-
+		*/
     	}
     	else
     	{ 
