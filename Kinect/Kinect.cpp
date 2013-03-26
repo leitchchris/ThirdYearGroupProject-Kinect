@@ -8,3 +8,12 @@
 * Requires        : Kinect, freenect, openCV, haarcascade_eye_tree_eyeglasses.xml + haarcascade_frontalface_alt.xml
 * G++             : To define
 */
+
+//================= Include =======================
+#include <iostream>
+#include <stdio.h>
+#include <unistd.h>             // For sleep thread
+#include <sstream>              // For int to string
+
+#include "libfreenect.hpp"      // For Kinect - see note for install
+#include <opencv2/opencv.hpp>   // Image processing - see note for install
