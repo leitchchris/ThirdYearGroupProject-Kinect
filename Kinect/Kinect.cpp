@@ -6,7 +6,7 @@
 * Version         : 1.0.0
 * Description     : Face identification for the project "home automation" - 3rd year Edinburh Napier University
 * Requires        : Kinect, freenect, openCV, haarcascade_eye_tree_eyeglasses.xml + haarcascade_frontalface_alt.xml
-* G++             : To define
+* G++             : gcc -o Kinect Kinect.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect
 */
 
 //================= Include =======================
@@ -18,9 +18,18 @@
 #include "libfreenect.hpp"      // For Kinect - see note for install
 #include <opencv2/opencv.hpp>   // Image processing - see note for install
 
+using namespace std;
+using namespace cv;
+
 //================= Functions =======================
+bool detectLum (Mat rgb_frame);
 
 //=================Global variables==============
+#define darkThreshold       10
+String face_cascade_name = "haarcascade_frontalface_alt.xml";
+String eyes_cascade_name = "haarcascade_eye_tree_eyeglasses.xml";
+CascadeClassifier face_cascade;
+CascadeClassifier eyes_cascade;
 
 //=================Kinect device=================
 class MyFreenectDevice : public Freenect::FreenectDevice {
@@ -37,7 +46,7 @@ class MyFreenectDevice : public Freenect::FreenectDevice {
     }
     // Do not call directly even in child
     void VideoCallback(void* _rgb, uint32_t timestamp) {
-        std::cout << "RGB callback" << std::endl;
+        //std::cout << "RGB callback" << std::endl;
         m_rgb_mutex.lock();
         uint8_t* rgb = static_cast<uint8_t*>(_rgb);
         rgbMat.data = rgb;
@@ -94,3 +103,63 @@ class MyFreenectDevice : public Freenect::FreenectDevice {
 };
 
 //================Function Main==================
+int main( int argc, const char** argv )
+{
+    // Init here
+    printf("Initialisation\n");
+    Mat rgb_frame(Size(640,480),CV_8UC3,Scalar(0));
+
+    if( !face_cascade.load( face_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
+    if( !eyes_cascade.load( eyes_cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
+
+    Freenect::Freenect freenect;
+    MyFreenectDevice& device = freenect.createDevice<MyFreenectDevice>(0);
+    device.startVideo();
+    printf("Start video\n");
+
+    bool lum;
+    bool once = false;
+
+    sleep(2);       // Waste first wrong frame
+
+    while(true)
+    {
+        device.getVideo(rgb_frame);
+        
+        if(!rgb_frame.empty())
+        {
+            //-- 1. Detect luminosity level
+            if(once == false)
+            {
+                lum = detectLum(rgb_frame);
+                printf("%d\n", lum);
+                once = true;
+            }
+        }
+        else
+        {
+            printf(" --(!) No captured frame -- Break!"); 
+            break; 
+        }
+
+        int c = waitKey(10);
+        if( (char)c == 'c' ) { break; }
+    }
+
+    return 0;
+}
+
+bool detectLum (Mat rgb_frame)
+{
+    Mat gray_frame(Size(640,480),CV_8UC3);
+
+    cvtColor(rgb_frame, gray_frame, CV_BGR2GRAY);
+    cv::Scalar avgPixelIntensity = cv::mean( gray_frame );
+
+    printf("Lum level : %f\n", avgPixelIntensity.val[0]);
+
+    if( avgPixelIntensity.val[0] < darkThreshold )
+        return false;
+    else
+        return true;
+}
