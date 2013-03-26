@@ -1,0 +1,45 @@
+tinou@linuxmint ~/Kinect/Kinect $ ./Kinect				// One big lamp
+Initialisation
+Start video
+Lum level : 92.501735
+1
+^[[A^[[A^C
+tinou@linuxmint ~/Kinect/Kinect $ ./Kinect				// One screen light
+Initialisation
+Start video
+Lum level : 2.893955
+0
+^C
+tinou@linuxmint ~/Kinect/Kinect $ ./Kinect				// One scree really low light
+Initialisation
+Start video
+Lum level : 1.053903
+0
+^[[A^C
+tinou@linuxmint ~/Kinect/Kinect $ ./Kinect				// Two screen light
+Initialisation
+Start video
+Lum level : 5.395088
+0
+^C
+tinou@linuxmint ~/Kinect/Kinect $ ./Kinect				// One small lamp
+Initialisation
+Start video
+Lum level : 41.943451
+1
+^[[A^C
+tinou@linuxmint ~/Kinect/Kinect $ ./Kinect				// All light
+Initialisation
+Start video
+Lum level : 117.735091
+1
+^C
+tinou@linuxmint ~/Kinect/Kinect $					// Full dark 
+Initialisation
+Start video
+Lum level : 1.026126
+0
+^C
+
+									// ToDo sun light
+
