@@ -6,7 +6,7 @@
 * Version         : 1.0.0
 * Description     : Face identification for the project "home automation" - 3rd year Edinburh Napier University
 * Requires        : Kinect, freenect, openCV, haarcascade_eye_tree_eyeglasses.xml + haarcascade_frontalface_alt.xml
-* G++             : gcc -o Kinect Kinect.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect
+* G++             : gcc -o Kinect Kinect.cpp -I/usr/local/include/libfreenect -fPIC -g -Wall `pkg-config --cflags opencv` `pkg-config --libs opencv` -L/usr/local/lib -lfreenect -lfreenect_sync
 */
 
 //================= Include =======================
@@ -16,6 +16,7 @@
 #include <sstream>              // For int to string
 
 #include "libfreenect.hpp"      // For Kinect - see note for install
+#include "libfreenect_sync.h"
 #include <opencv2/opencv.hpp>   // Image processing - see note for install
 
 using namespace std;
@@ -43,6 +44,11 @@ class MyFreenectDevice : public Freenect::FreenectDevice {
             v = std::pow(v, 3)* 6;
             m_gamma[i] = v*6*256;
         }
+    }
+    ~MyFreenectDevice()
+    {
+        //freenect_close_device(0);
+        //freenect_shutdown(_ctx);
     }
     // Do not call directly even in child
     void VideoCallback(void* _rgb, uint32_t timestamp) {
@@ -118,13 +124,14 @@ int main( int argc, const char** argv )
     printf("Start video\n");
 
     bool lum;
-    bool once = false;
+    bool once = false, once2 = false;
 
-    sleep(2);       // Waste first wrong frame
+    sleep(1);       // Waste first wrong frame
 
     while(true)
     {
-        device.getVideo(rgb_frame);
+        if(once2 == false)
+            device.getVideo(rgb_frame);
         
         if(!rgb_frame.empty())
         {
@@ -134,6 +141,35 @@ int main( int argc, const char** argv )
                 lum = detectLum(rgb_frame);
                 printf("%d\n", lum);
                 once = true;
+            }
+            //-- 2. Get RGB or IR
+            if(lum == true)     // RGB
+            {
+
+            }
+            else                // Infrared
+            {
+                if(once2 == false)
+                {
+                    device.stopVideo();
+                    delete &device;
+                }
+                once2 = true;
+
+                //printf("Get Infra\n");
+                char *irBufferTemp = 0;
+                IplImage* image = 0; 
+                if (!image) image = cvCreateImageHeader(cvSize(640,488), 8 , 1); 
+                unsigned int timestamp;
+                if( freenect_sync_get_video((void**)&irBufferTemp,&timestamp,0,FREENECT_VIDEO_IR_8BIT)) 
+                    return NULL;
+                else
+                {   
+                    //printf("Display\n");
+                    cvSetData(image, irBufferTemp, 640*1 ) ; 
+                    Mat IRimg(image);
+                    imshow( "Infrared", IRimg );
+                }
             }
         }
         else
@@ -156,7 +192,7 @@ bool detectLum (Mat rgb_frame)
     cvtColor(rgb_frame, gray_frame, CV_BGR2GRAY);
     cv::Scalar avgPixelIntensity = cv::mean( gray_frame );
 
-    printf("Lum level : %f\n", avgPixelIntensity.val[0]);
+    //printf("Lum level : %f\n", avgPixelIntensity.val[0]);
 
     if( avgPixelIntensity.val[0] < darkThreshold )
         return false;
