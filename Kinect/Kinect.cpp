@@ -25,7 +25,7 @@ using namespace cv;
 
 //================= Functions =======================
 bool detectLum (Mat rgb_frame);
-bool detectFace(Mat frame);
+void detectFace(Mat frame);
 string intToString ( int nb );
 static void read_csv(const string& filename, vector<Mat>& images, vector<int>& labels, char separator = ';');
 
@@ -36,6 +36,7 @@ String eyes_cascade_name = "haarcascade_eye_tree_eyeglasses.xml";
 CascadeClassifier face_cascade;
 CascadeClassifier eyes_cascade;
 RNG rng(12345);
+bool faceDetected = false;
 bool training = false;
 int nbpersonIndex = 0, count2 = 0;
 //=================Kinect device=================
@@ -127,7 +128,6 @@ int main( int argc, const char** argv )
         cout << "\t <device id> -- The webcam device id to grab frames from." << endl;
         exit(1);
     }
-    printf("test\n");
 
     // Get the path to your CSV:
     string fn_haar = string(argv[1]);
@@ -178,6 +178,7 @@ int main( int argc, const char** argv )
     bool once = false, infra = false;
     bool alt = true;
     int countFaceD = 0;
+    bool faceReco = false;
 
 
     sleep(1);       // Waste first wrong frame
@@ -205,7 +206,7 @@ int main( int argc, const char** argv )
                 printf("GetRGB\n");
                 //imshow("RGB", rgb_frame);
             }
-            else                // Infrared
+            if(lum == false)                // Infrared
             {
                 if(infra == false)
                 {
@@ -231,110 +232,126 @@ int main( int argc, const char** argv )
             }
 
             //-- 3. Detect face
-            printf("detectFace\n");
-            for(int i=0; i<20; i++)
-            {
+            // for(int i=0; i<20; i++)
+            // {
+                printf("detectFace\n");
                 device.getVideo(rgb_frame);     //deal with Infra!!
                 if(infra == false)
                 {
                     //printf("Detect face...\n");
-                    if(detectFace(rgb_frame))
-                    { 
-                        countFaceD++;
-                    }
+                    while(!faceDetected)
+                    {
+                        device.getVideo(rgb_frame);
+                        detectFace(rgb_frame);
+                        //printf("Face detect? %d\n", faceDetected);
+                        //imshow("Detect Face", rgb_frame);
+                    }     
+                    //countFaceD++;
+                    printf("Face Detected\n");
+                    faceDetected = false;
                 }    
                 //else
                     //if(detectFace(IRimg))
                     //    count++;
                 //sleep(1);
-                if (countFaceD == 5)
-                {
-                    printf("Face detected\n");
-                    countFaceD = 0;
-                    break;
-                }
-            }
+            //}
+            // if (countFaceD >= 5)
+            // {
+            //     printf("Face detected\n");
+            //     countFaceD = 0;
+            //     faceReco = true;
+            // }
+            // if (countFaceD < 5)
+            // {
+            //     countFaceD = 0;
+            //     faceReco = false;
+            // }
 
             //-- 4. Face reco
-            if(false)       //If face reco otherwise training
+            if(false && faceReco == true)       //If face reco otherwise training
             {
-                device.getVideo(rgb_frame);
-                // Clone the current frame:
-                Mat original = rgb_frame.clone();
-                // Convert the current frame to grayscale:
-                Mat gray;
-                cvtColor(original, gray, CV_BGR2GRAY);
-                // Find the faces in the frame:
-                vector< Rect_<int> > faces;
-                haar_cascade.detectMultiScale(gray, faces);
-                // At this point you have the position of the faces in
-                // faces. Now we'll get the faces, make a prediction and
-                // annotate it in the video. Cool or what?
-                for(int i = 0; i < faces.size(); i++) {
-                    // Process face by face:
-                    Rect face_i = faces[i];
-                    // Crop the face from the image. So simple with OpenCV C++:
-                    Mat face = gray(face_i);
-                    // Resizing the face is necessary for Eigenfaces and Fisherfaces. You can easily
-                    // verify this, by reading through the face recognition tutorial coming with OpenCV.
-                    // Resizing IS NOT NEEDED for Local Binary Patterns Histograms, so preparing the
-                    // input data really depends on the algorithm used.
-                    //
-                    // I strongly encourage you to play around with the algorithms. See which work best
-                    // in your scenario, LBPH should always be a contender for robust face recognition.
-                    //
-                    // Since I am showing the Fisherfaces algorithm here, I also show how to resize the
-                    // face you have just found:
-                    Mat face_resized;
-                    cv::resize(face, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
-                    // Now perform the prediction, see how easy that is:
-                    int prediction = model->predict(face_resized);
-                    // And finally write all we've found out to the original image!
-                    // First of all draw a green rectangle around the detected face:
-                    rectangle(original, face_i, CV_RGB(0, 255,0), 1);
-                    // Create the text we will annotate the box with:
-                    string box_text = format("Prediction = %d", prediction);
-                    // Calculate the position for annotated text (make sure we don't
-                    // put illegal values in there):
-                    int pos_x = std::max(face_i.tl().x - 10, 0);
-                    int pos_y = std::max(face_i.tl().y - 10, 0);
-                    // And now put it into the image:
-                    putText(original, box_text, Point(pos_x, pos_y), FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0,255,0), 2.0);
-                }
-                imshow("face_recognizer", original);  
+                // device.getVideo(rgb_frame);
+                // // Clone the current frame:
+                // Mat original = rgb_frame.clone();
+                // // Convert the current frame to grayscale:
+                // Mat gray;
+                // cvtColor(original, gray, CV_BGR2GRAY);
+                // // Find the faces in the frame:
+                // vector< Rect_<int> > faces;
+                // haar_cascade.detectMultiScale(gray, faces);
+                // // At this point you have the position of the faces in
+                // // faces. Now we'll get the faces, make a prediction and
+                // // annotate it in the video. Cool or what?
+                // for(int i = 0; i < faces.size(); i++) {
+                //     // Process face by face:
+                //     Rect face_i = faces[i];
+                //     // Crop the face from the image. So simple with OpenCV C++:
+                //     Mat face = gray(face_i);
+                //     // Resizing the face is necessary for Eigenfaces and Fisherfaces. You can easily
+                //     // verify this, by reading through the face recognition tutorial coming with OpenCV.
+                //     // Resizing IS NOT NEEDED for Local Binary Patterns Histograms, so preparing the
+                //     // input data really depends on the algorithm used.
+                //     //
+                //     // I strongly encourage you to play around with the algorithms. See which work best
+                //     // in your scenario, LBPH should always be a contender for robust face recognition.
+                //     //
+                //     // Since I am showing the Fisherfaces algorithm here, I also show how to resize the
+                //     // face you have just found:
+                //     Mat face_resized;
+                //     cv::resize(face, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
+                //     // Now perform the prediction, see how easy that is:
+                //     int prediction = model->predict(face_resized);
+                //     // And finally write all we've found out to the original image!
+                //     // First of all draw a green rectangle around the detected face:
+                //     rectangle(original, face_i, CV_RGB(0, 255,0), 1);
+                //     // Create the text we will annotate the box with:
+                //     string box_text = format("Prediction = %d", prediction);
+                //     // Calculate the position for annotated text (make sure we don't
+                //     // put illegal values in there):
+                //     int pos_x = std::max(face_i.tl().x - 10, 0);
+                //     int pos_y = std::max(face_i.tl().y - 10, 0);
+                //     // And now put it into the image:
+                //     putText(original, box_text, Point(pos_x, pos_y), FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0,255,0), 2.0);
+                // }
+                // imshow("face_recognizer", original);  
             }
-            else
+            else if ( faceReco == false )
             {
+
+                printf("faceTraining\n");
                 system(("mkdir img/" + intToString(nbpersonIndex)).c_str());
-                for(count2 = 0; count2 < 10; count2++)
+                for(count2 = 0; count2 < 20; count2++)
                 {
                     device.getVideo(rgb_frame);     //deal with Infra!!
-                    printf("faceTraining\n");
                     training = true;
                     if( alt == false) //One frame on to can be more for more random faces.
                     {
-                        printf ("Detect face\n");
-                        detectFace(rgb_frame);
-
-                        printf("update database file\n");
-                        system("python csv.py img/ > facerec_at_t.txt");
+                        while(!faceDetected)
+                        {
+                            device.getVideo(rgb_frame);
+                            detectFace(rgb_frame);
+                        }
+                        faceDetected = false;
+                        //printf("update database file\n");
                     }
                     alt = !alt;
+                    printf("%d\n", count2);
                 }
+                system("python csv.py img/ > facerec_at_t.txt");
+                nbpersonIndex++;
             } 
-            nbpersonIndex++;
+            
             training = false;
-      }
-      else
-      {
-        printf(" --(!) No captured frame -- Break!"); 
-        break; 
+        }
+        else
+        {
+            printf(" --(!) No captured frame -- Break!"); 
+            break; 
+        }
+
+        int c = waitKey(10);
+        if( (char)c == 'c' ) { break; }
     }
-
-    int c = waitKey(10);
-    if( (char)c == 'c' ) { break; }
-}
-
     return 0;
 }
 
@@ -355,14 +372,14 @@ bool detectLum (Mat rgb_frame)
 }
 
 /** @function detectAndDisplay */
-bool detectFace( Mat frame )
+void detectFace( Mat frame )
 {
   std::vector<Rect> faces;
   Mat frame_gray;
 
   cvtColor( frame, frame_gray, CV_BGR2GRAY );
   equalizeHist( frame_gray, frame_gray );
-  
+
   //-- Detect faces
   face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CV_HAAR_SCALE_IMAGE, Size(30, 30) );
 
@@ -378,15 +395,16 @@ bool detectFace( Mat frame )
     eyes_cascade.detectMultiScale( faceROI, eyes, 1.1, 2, 0 |CV_HAAR_SCALE_IMAGE, Size(30, 30) );
 
     for( int j = 0; j < eyes.size(); j++ )
-     {
+    {
        Point center( faces[i].x + eyes[j].x + eyes[j].width*0.5, faces[i].y + eyes[j].y + eyes[j].height*0.5 );
        int radius = cvRound( (eyes[j].width + eyes[j].height)*0.25 );
        //circle( frame, center, radius, Scalar( 255, 0, 0 ), 4, 8, 0 );
        //printf("Eyes%d x : %f\nEyes%d y : %f \n", j, faces[i].x + eyes[j].x + eyes[j].width*0.5 , j, faces[i].y + eyes[j].y + eyes[j].height*0.5);
 
        //Return true only if at least one face and two eyes.
-        if(j == 1)          //SHOULD be one !!!!
+        if(j == 1)
         {
+            faceDetected = true;
             if(training == true)
             {
                 string name = "img/" + intToString(nbpersonIndex) + "/" + intToString(count2) + ".jpg";
@@ -400,6 +418,7 @@ bool detectFace( Mat frame )
                     command = "python crop.py " + intToString(nbpersonIndex) + "/" + intToString(count2) + " " + intToString(faces[i].x + eyes[j].x + eyes[j].width*0.5) + " " + intToString(faces[i].y + eyes[j].y + eyes[j].height*0.5) + " " + intToString(faces[i].x + eyes[j-1].x + eyes[j-1].width*0.5) + " " + intToString(faces[i].y + eyes[j-1].y + eyes[j-1].height*0.5) ;
                 printf ("%s \n", command.c_str());
                 system(command.c_str());
+                sleep(1);
                 printf ("Done\n");
                 string command2 = "rm img/" + intToString(nbpersonIndex) + "/" + intToString(count2) + ".jpg";
                 printf(command2.c_str());
@@ -407,16 +426,15 @@ bool detectFace( Mat frame )
                 system(command2.c_str());    //Remove init image
                 sleep(1);
             }
-            printf("Pouet\n");
-            return true;
         }     
         else
-            return false;
+            faceDetected = false;
     }
   }
-    return false;
+  //printf("End detect\n");
+  //faceDetected = false;
     //-- Show what you got
-   imshow( "Detect Face", frame );
+  //imshow( "Detect Face", frame );
 }
 
 void read_csv(const string& filename, vector<Mat>& images, vector<int>& labels, char separator) 
