@@ -39,6 +39,7 @@ RNG rng(12345);
 bool faceDetected = false;
 bool training = false;
 int nbpersonIndex = 0, count2 = 0;
+
 //=================Kinect device=================
 class MyFreenectDevice : public Freenect::FreenectDevice {
   public:
@@ -177,12 +178,12 @@ int main( int argc, const char** argv )
     bool lum;
     bool once = false, infra = false;
     bool alt = true;
-    int countFaceD = 0;
     bool faceReco = false;
 
+    // Waste first wrong frame
+    sleep(1);
 
-    sleep(1);       // Waste first wrong frame
-
+    // Loop
     while(true)
     {
         //if(infra == false)
@@ -190,8 +191,6 @@ int main( int argc, const char** argv )
         
         if(!rgb_frame.empty())
         {
-            // detectFace(rgb_frame);
-            // imshow("RGB", rgb_frame);
             //-- 1. Detect luminosity level
             if(once == false)
             {
@@ -232,95 +231,82 @@ int main( int argc, const char** argv )
             }
 
             //-- 3. Detect face
-            // for(int i=0; i<20; i++)
-            // {
-                printf("detectFace\n");
-                device.getVideo(rgb_frame);     //deal with Infra!!
-                if(infra == false)
-                {
-                    //printf("Detect face...\n");
-                    while(!faceDetected)
-                    {
-                        device.getVideo(rgb_frame);
-                        detectFace(rgb_frame);
-                        //printf("Face detect? %d\n", faceDetected);
-                        //imshow("Detect Face", rgb_frame);
-                    }     
-                    //countFaceD++;
-                    printf("Face Detected\n");
-                    faceDetected = false;
-                }    
-                //else
-                    //if(detectFace(IRimg))
-                    //    count++;
-                //sleep(1);
-            //}
-            // if (countFaceD >= 5)
-            // {
-            //     printf("Face detected\n");
-            //     countFaceD = 0;
-            //     faceReco = true;
-            // }
-            // if (countFaceD < 5)
-            // {
-            //     countFaceD = 0;
-            //     faceReco = false;
-            // }
-
-            //-- 4. Face reco
-            if(false && faceReco == true)       //If face reco otherwise training
+            printf("detectFace\n");
+            device.getVideo(rgb_frame);     //TODO : deal with Infra!!
+            if(infra == false)
             {
-                // device.getVideo(rgb_frame);
-                // // Clone the current frame:
-                // Mat original = rgb_frame.clone();
-                // // Convert the current frame to grayscale:
-                // Mat gray;
-                // cvtColor(original, gray, CV_BGR2GRAY);
-                // // Find the faces in the frame:
-                // vector< Rect_<int> > faces;
-                // haar_cascade.detectMultiScale(gray, faces);
-                // // At this point you have the position of the faces in
-                // // faces. Now we'll get the faces, make a prediction and
-                // // annotate it in the video. Cool or what?
-                // for(int i = 0; i < faces.size(); i++) {
-                //     // Process face by face:
-                //     Rect face_i = faces[i];
-                //     // Crop the face from the image. So simple with OpenCV C++:
-                //     Mat face = gray(face_i);
-                //     // Resizing the face is necessary for Eigenfaces and Fisherfaces. You can easily
-                //     // verify this, by reading through the face recognition tutorial coming with OpenCV.
-                //     // Resizing IS NOT NEEDED for Local Binary Patterns Histograms, so preparing the
-                //     // input data really depends on the algorithm used.
-                //     //
-                //     // I strongly encourage you to play around with the algorithms. See which work best
-                //     // in your scenario, LBPH should always be a contender for robust face recognition.
-                //     //
-                //     // Since I am showing the Fisherfaces algorithm here, I also show how to resize the
-                //     // face you have just found:
-                //     Mat face_resized;
-                //     cv::resize(face, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
-                //     // Now perform the prediction, see how easy that is:
-                //     int prediction = model->predict(face_resized);
-                //     // And finally write all we've found out to the original image!
-                //     // First of all draw a green rectangle around the detected face:
-                //     rectangle(original, face_i, CV_RGB(0, 255,0), 1);
-                //     // Create the text we will annotate the box with:
-                //     string box_text = format("Prediction = %d", prediction);
-                //     // Calculate the position for annotated text (make sure we don't
-                //     // put illegal values in there):
-                //     int pos_x = std::max(face_i.tl().x - 10, 0);
-                //     int pos_y = std::max(face_i.tl().y - 10, 0);
-                //     // And now put it into the image:
-                //     putText(original, box_text, Point(pos_x, pos_y), FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0,255,0), 2.0);
-                // }
-                // imshow("face_recognizer", original);  
+                while(!faceDetected)
+                {
+                    device.getVideo(rgb_frame);
+                    detectFace(rgb_frame);
+                    //printf("Face detect? %d\n", faceDetected);
+                    //imshow("Detect Face", rgb_frame);
+                }     
+                printf("Face Detected\n");
+                faceDetected = false;
+            }    
+
+            //-- 4.1. faceReco
+            printf("faceReco\n");
+            device.getVideo(rgb_frame);
+            // Clone the current frame:
+            Mat original = rgb_frame.clone();
+            // Convert the current frame to grayscale:
+            Mat gray;
+            cvtColor(original, gray, CV_BGR2GRAY);
+            // Find the faces in the frame:
+            vector< Rect_<int> > faces;
+            haar_cascade.detectMultiScale(gray, faces);
+            // At this point you have the position of the faces in
+            // faces. Now we'll get the faces, make a prediction and
+            // annotate it in the video. Cool or what?
+            for(int i = 0; i < faces.size(); i++) {
+                // Process face by face:
+                Rect face_i = faces[i];
+                // Crop the face from the image. So simple with OpenCV C++:
+                Mat face = gray(face_i);
+                // Resizing the face is necessary for Eigenfaces and Fisherfaces. You can easily
+                // verify this, by reading through the face recognition tutorial coming with OpenCV.
+                // Resizing IS NOT NEEDED for Local Binary Patterns Histograms, so preparing the
+                // input data really depends on the algorithm used.
+                //
+                // I strongly encourage you to play around with the algorithms. See which work best
+                // in your scenario, LBPH should always be a contender for robust face recognition.
+                //
+                // Since I am showing the Fisherfaces algorithm here, I also show how to resize the
+                // face you have just found:
+                Mat face_resized;
+                cv::resize(face, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
+                // Now perform the prediction, see how easy that is:
+                int prediction = -1;
+                prediction = model->predict(face_resized);
+                // And finally write all we've found out to the original image!
+                // First of all draw a green rectangle around the detected face:
+                rectangle(original, face_i, CV_RGB(0, 255,0), 1);
+                // If face recognized 
+                printf("Prediction : %d\n", prediction);
+                if(prediction != -1)
+                    faceReco = true;        // TODO Send msg server here!!
+                else
+                    faceReco = false;
+                // Create the text we will annotate the box with:
+                string box_text = format("Prediction = %d", prediction);
+                // Calculate the position for annotated text (make sure we don't
+                // put illegal values in there):
+                int pos_x = std::max(face_i.tl().x - 10, 0);
+                int pos_y = std::max(face_i.tl().y - 10, 0);
+                // And now put it into the image:
+                putText(original, box_text, Point(pos_x, pos_y), FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0,255,0), 2.0);
             }
-            else if ( faceReco == false )
+            //imshow("face_recognizer", original);
+
+            //-- 4.2. faceTraining
+            if ( faceReco == false )
             {
 
                 printf("faceTraining\n");
                 system(("mkdir img/" + intToString(nbpersonIndex)).c_str());
-                for(count2 = 0; count2 < 20; count2++)
+                for(count2 = 0; count2 < 5; count2++)
                 {
                     device.getVideo(rgb_frame);     //deal with Infra!!
                     training = true;
@@ -334,6 +320,8 @@ int main( int argc, const char** argv )
                         faceDetected = false;
                         //printf("update database file\n");
                     }
+                    else
+                        count2--;
                     alt = !alt;
                     printf("%d\n", count2);
                 }
