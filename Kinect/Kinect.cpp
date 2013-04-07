@@ -257,17 +257,15 @@ int main( int argc, const char** argv )
             printf("faceReco\n");
             //freenect_set_led(0, LED_RED);
             device.getVideo(rgb_frame);
-            // Clone the current frame:
+
             Mat original = rgb_frame.clone();
-            // Convert the current frame to grayscale:
             Mat gray;
             cvtColor(original, gray, CV_BGR2GRAY);
+
             // Find the faces in the frame:
             vector< Rect_<int> > faces;
             haar_cascade.detectMultiScale(gray, faces);
-            // At this point you have the position of the faces in
-            // faces. Now we'll get the faces, make a prediction and
-            // annotate it in the video. Cool or what?
+            // For each face with position
             for(int i = 0; i < faces.size(); i++) {
                 // Process face by face:
                 Rect face_i = faces[i];
@@ -354,7 +352,11 @@ int main( int argc, const char** argv )
     return 0;
 }
 
-
+/*
+    brief:  detect the luminance level in an image frame
+    note:   use the average of gray, it's working but should use the HSV domain
+    return: bool : false if the average it lower than the threshold, true otherwise
+*/
 bool detectLum (Mat rgb_frame)
 {
     Mat gray_frame(Size(640,480),CV_8UC3);
@@ -370,7 +372,11 @@ bool detectLum (Mat rgb_frame)
         return true;
 }
 
-/** @function detectAndDisplay */
+/*
+    brief:  detect a face in an image frame
+    note:   if it's facetraining mode, call the script to crop, align eyes and save the image
+    return: void
+*/
 void detectFace( Mat frame )
 {
   std::vector<Rect> faces;
@@ -436,6 +442,11 @@ void detectFace( Mat frame )
   //imshow( "Detect Face", frame );
 }
 
+/*
+    brief:  read the csv file that contain the list of each image of each person
+    note:   can be improve by associate the id with a name
+    return: void
+*/
 void read_csv(const string& filename, vector<Mat>& images, vector<int>& labels, char separator) 
 {
     std::ifstream file(filename.c_str(), ifstream::in);
@@ -455,6 +466,11 @@ void read_csv(const string& filename, vector<Mat>& images, vector<int>& labels, 
     }
 }
 
+/*
+    brief:  convert an int var into string
+    note:   use for printf
+    return: string from the int input
+*/
 string intToString ( int nb )
 {
     std::string s;
