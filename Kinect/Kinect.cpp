@@ -352,6 +352,7 @@ int main( int argc, const char** argv )
     return 0;
 }
 
+
 /*
     brief:  detect the luminance level in an image frame
     note:   use the average of gray, it's working but should use the HSV domain
