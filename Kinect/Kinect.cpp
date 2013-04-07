@@ -58,6 +58,10 @@ class MyFreenectDevice : public Freenect::FreenectDevice {
         //freenect_close_device(0);
         //freenect_shutdown(_ctx);
     }
+    void setLed(freenect_led_options color)
+    {
+        freenect_set_led(0, color);
+    }
     // Do not call directly even in child
     void VideoCallback(void* _rgb, uint32_t timestamp) {
         //std::cout << "RGB callback" << std::endl;
@@ -130,7 +134,7 @@ int main( int argc, const char** argv )
         exit(1);
     }
 
-    // Get the path to your CSV:
+    // Get the path to csv face database:
     string fn_haar = string(argv[1]);
     string fn_csv = string(argv[2]);
 
@@ -161,7 +165,7 @@ int main( int argc, const char** argv )
     CascadeClassifier haar_cascade;
     haar_cascade.load(fn_haar);
 
-//-----------------------------
+    //-----------------------------
     // Init here
     printf("Initialisation\n");
     Mat rgb_frame(Size(640,480),CV_8UC3);
@@ -174,6 +178,7 @@ int main( int argc, const char** argv )
     MyFreenectDevice& device = freenect.createDevice<MyFreenectDevice>(0);
     device.startVideo();
     printf("Start video\n");
+    //device.setLed(LED_RED);
 
     bool lum;
     bool once = false, infra = false;
@@ -194,6 +199,7 @@ int main( int argc, const char** argv )
             //-- 1. Detect luminosity level
             if(once == false)
             {
+                //freenect_set_led(0, LED_GREEN);
                 lum = detectLum(rgb_frame);
                 printf("detectLum : %d\n", lum);
                 once = true;
@@ -232,6 +238,7 @@ int main( int argc, const char** argv )
 
             //-- 3. Detect face
             printf("detectFace\n");
+            //freenect_set_led(0, LED_BLINK_GREEN);
             device.getVideo(rgb_frame);     //TODO : deal with Infra!!
             if(infra == false)
             {
@@ -248,6 +255,7 @@ int main( int argc, const char** argv )
 
             //-- 4.1. faceReco
             printf("faceReco\n");
+            //freenect_set_led(0, LED_RED);
             device.getVideo(rgb_frame);
             // Clone the current frame:
             Mat original = rgb_frame.clone();
@@ -277,6 +285,7 @@ int main( int argc, const char** argv )
                 // face you have just found:
                 Mat face_resized;
                 cv::resize(face, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
+                imwrite("img/1.png", face);
                 // Now perform the prediction, see how easy that is:
                 int prediction = -1;
                 prediction = model->predict(face_resized);
@@ -303,8 +312,8 @@ int main( int argc, const char** argv )
             //-- 4.2. faceTraining
             if ( faceReco == false )
             {
-
                 printf("faceTraining\n");
+                //freenect_set_led(0, LED_BLINK_RED_YELLOW);
                 system(("mkdir img/" + intToString(nbpersonIndex)).c_str());
                 for(count2 = 0; count2 < 5; count2++)
                 {
@@ -340,6 +349,8 @@ int main( int argc, const char** argv )
         int c = waitKey(10);
         if( (char)c == 'c' ) { break; }
     }
+    device.stopVideo();
+    delete &device;
     return 0;
 }
 
