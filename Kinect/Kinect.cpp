@@ -20,6 +20,9 @@
 #include "libfreenect_sync.h"
 #include <opencv2/opencv.hpp>   // Image processing - see note for install
 
+#include <sys/socket.h>    //socket
+#include <arpa/inet.h> //inet_addr
+
 using namespace std;
 using namespace cv;
 
@@ -28,7 +31,7 @@ bool detectLum (Mat rgb_frame);
 void detectFace(Mat frame);
 string intToString ( int nb );
 static void read_csv(const string& filename, vector<Mat>& images, vector<int>& labels, char separator = ';');
-
+void sendToServer();
 //=================Global variables==============
 #define darkThreshold       10
 String face_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -293,7 +296,10 @@ int main( int argc, const char** argv )
                 // If face recognized 
                 printf("Prediction : %d\n", prediction);
                 if(prediction != -1)
+                {
                     faceReco = true;        // TODO Send msg server here!!
+                    sendToServer();
+                }
                 else
                     faceReco = false;
                 // Create the text we will annotate the box with:
@@ -479,4 +485,42 @@ string intToString ( int nb )
     out << nb;
     s = out.str();
     return s;
+}
+
+void sendToServer()
+{
+    int sock;
+    struct sockaddr_in server;
+    std::string str = "K:Active";
+    const char* message = str.c_str();
+
+    //Create socket
+    sock = socket(AF_INET , SOCK_STREAM , 0);
+    if (sock == -1)
+    {
+        printf("Could not create socket");
+    }
+    puts("Socket created");
+
+    server.sin_addr.s_addr = inet_addr("146.176.224.134");
+    server.sin_family = AF_INET;
+    server.sin_port = htons( 2001 );
+
+    //Connect to remote server
+    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
+    {
+        perror("connect failed. Error");
+    }
+
+    puts("Connected\n");
+
+    //keep communicating with server
+    //message = "K:Active".c_str();
+        //Send some data
+    if( send(sock , message , strlen(message) , 0) < 0)
+    {
+        puts("Send failed");
+    }
+
+    close(sock);
 }
