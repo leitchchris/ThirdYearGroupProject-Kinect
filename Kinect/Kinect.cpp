@@ -31,7 +31,7 @@ bool detectLum (Mat rgb_frame);
 void detectFace(Mat frame);
 string intToString ( int nb );
 static void read_csv(const string& filename, vector<Mat>& images, vector<int>& labels, char separator = ';');
-void sendToServer();
+void sendToServer(string str);
 //=================Global variables==============
 #define darkThreshold       10
 String face_cascade_name = "haarcascade_frontalface_alt.xml";
@@ -288,28 +288,30 @@ int main( int argc, const char** argv )
                 cv::resize(face, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
                 imwrite("img/1.png", face);
                 // Now perform the prediction, see how easy that is:
-                int prediction = -1;
-                prediction = model->predict(face_resized);
+                // Some variables for the predicted label and associated confidence (e.g. distance):
+                int predicted_label = -1;
+                double predicted_confidence = 0.0;
+                model->predict(face_resized, predicted_label, predicted_confidence);
                 // And finally write all we've found out to the original image!
                 // First of all draw a green rectangle around the detected face:
                 rectangle(original, face_i, CV_RGB(0, 255,0), 1);
-                // If face recognized 
-                printf("Prediction : %d\n", prediction);
-                if(prediction != -1)
-                {
-                    faceReco = true;        // TODO Send msg server here!!
-                    sendToServer();
-                }
-                else
-                    faceReco = false;
                 // Create the text we will annotate the box with:
-                string box_text = format("Prediction = %d", prediction);
+                string box_text = format("Prediction = %d", predicted_label);
                 // Calculate the position for annotated text (make sure we don't
                 // put illegal values in there):
                 int pos_x = std::max(face_i.tl().x - 10, 0);
                 int pos_y = std::max(face_i.tl().y - 10, 0);
                 // And now put it into the image:
                 putText(original, box_text, Point(pos_x, pos_y), FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0,255,0), 2.0);
+
+                printf("Prediction : %d\n", predicted_label);
+                if(predicted_confidence >= 1500)
+                {
+                    faceReco = true;        // TODO Send msg server here!!
+                    sendToServer("K:Active");
+                }
+                else
+                    faceReco = false;
             }
             //imshow("face_recognizer", original);
 
@@ -340,6 +342,7 @@ int main( int argc, const char** argv )
                 }
                 system("python csv.py img/ > facerec_at_t.txt");
                 nbpersonIndex++;
+                sendToServer("K:Unknown");
             } 
             
             training = false;
@@ -487,11 +490,10 @@ string intToString ( int nb )
     return s;
 }
 
-void sendToServer()
+void sendToServer(string str)
 {
     int sock;
     struct sockaddr_in server;
-    std::string str = "K:Active";
     const char* message = str.c_str();
 
     //Create socket
